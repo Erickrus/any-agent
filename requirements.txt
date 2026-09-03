@@ -1,0 +1,8 @@
+aiohttp>=3.9
+pyyaml>=6.0
+qrcode-terminal>=0.8; python_version>="3"
+pycryptodome>=3.20
+
+# External binary (not a pip package): cloudflared must be installed for
+# hub/device tunnels. macOS: `brew install cloudflared`.
+# https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/

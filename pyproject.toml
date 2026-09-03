@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "any-agent"
+version = "0.1.0"
+description = "WeChat bridge to local coding agents (OpenCode, Claude Code) with a hub/device mesh"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "aiohttp>=3.9",
+    "pyyaml>=6.0",
+    "pycryptodome>=3.20",
+    "qrcode-terminal>=0.8",
+]
+
+[project.scripts]
+any-agent = "any_agent.app:cli"
+
+[tool.setuptools]
+# Only ship the package; the repo has many unrelated dirs (opencode/, claude-code/, ...).
+packages = ["any_agent", "any_agent.skills"]
+
+[tool.setuptools.package-data]
+# Bundle the skill markdown so first-run can install it into the working dir.
+"any_agent.skills" = ["**/SKILL.md"]
+
+[tool.setuptools.exclude-package-data]
+"any_agent" = ["*.bak", "__pycache__/*"]
