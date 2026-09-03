@@ -9,13 +9,13 @@ machine with `/use <device>/<agent>`, and the hub relays prompts and replies —
 images and files.
 
 ```
-                         ┌───────────────── hub machine ─────────────────┐
+                         ┌───────────────── hub machine ──────────────────┐
  iPhone WeChat  ──────▶  │  any-agent (hub)  ──▶  local opencode / claude │
                          │        ▲   │                                   │
                          └────────│───┼───────────────────────────────────┘
                                   │   │  cloudflared tunnels (JSON over HTTPS)
                      register /   │   ▼  prompt / result / media / logs
-                     heartbeat  ┌─┴───────────── device "box1" ───────────┐
+                     heartbeat  ┌─┴───────────── device "box1" ────────────┐
                                 │  any-agent (device) ──▶ opencode/claude  │
                                 └──────────────────────────────────────────┘
 ```
