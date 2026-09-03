@@ -61,9 +61,15 @@ python3 -m any_agent
 python3 -m any_agent --login
 
 ```
-<img src=imgs/wechat.png />
+you will first see this:
 
 <img src=imgs/qrcode.png />
+
+Then use wechat plugin to scan this qrcode:
+
+<img src=imgs/wechat.png />
+
+
 
 ```bash
 
