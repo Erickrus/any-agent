@@ -60,6 +60,14 @@ python3 -m any_agent
 # 3. Log in to WeChat (QR code prints in the terminal; scan it once).
 python3 -m any_agent --login
 
+```
+<img src=imgs/wechat.png />
+
+<img src=imgs/qrcode.png />
+
+```bash
+
+
 # 4. Later runs reuse the saved login — no QR, no --login needed.
 python3 -m any_agent
 ```
