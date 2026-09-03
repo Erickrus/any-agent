@@ -1,0 +1,31 @@
+# ── Python venv (this repo root doubles as a virtualenv) ──
+bin/
+lib/
+include/
+pyvenv.cfg
+.Python
+
+# ── Byte-compiled / build artifacts ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# ── OS / editor junk ──
+.DS_Store
+
+# ── Local runtime state / secrets ──
+# Generated on first run; user edits their own. Ship the starter via DEFAULT_CONFIG.
+any_agent_config.yaml
+# Credentials live in ~/.any_agent, but ignore any stray local copy.
+credentials.json
+*.jsonl
+combined.jsonl
+
+# ── Agent skill folders created by first-run bootstrap ──
+.claude/
+.opencode/
+
+
