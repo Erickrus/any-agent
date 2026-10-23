@@ -273,8 +273,10 @@ class PiClient:
         if disposition == "handled":
             await asyncio.sleep(0.2)
             final = await self._get_last_assistant_text()
-            chunks = "".join(self._response_chunks).strip()
-            return ACPResponse(text=final if final is not None else chunks, finished=True)
+            if final is None:
+                final = "".join(self._response_chunks).strip()
+            logger.info(f"[{self.name}] Prompt done ({len(final or '')} chars): {final or ''}")
+            return ACPResponse(text=final or "", finished=True)
 
         try:
             await asyncio.wait_for(self._settled.wait(), timeout=600)
@@ -284,7 +286,7 @@ class PiClient:
         final = await self._get_last_assistant_text()
         if final is None:
             final = "".join(self._response_chunks).strip()
-        logger.info(f"[{self.name}] Prompt done: {len(final or '')} chars")
+        logger.info(f"[{self.name}] Prompt done ({len(final or '')} chars): {final or ''}")
         return ACPResponse(text=final or "", finished=True)
 
     async def _get_last_assistant_text(self) -> str | None:

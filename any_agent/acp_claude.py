@@ -407,6 +407,7 @@ class ClaudeCodeClient:
             f"[{self.name}] Prompt done: {len(full_text)} chars, "
             f"{len(self._tool_calls)} tool calls"
         )
+        logger.info(f"[{self.name}] Response: {full_text}")
         return ACPResponse(
             text=full_text,
             tool_calls=list(self._tool_calls),

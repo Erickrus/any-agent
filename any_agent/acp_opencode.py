@@ -334,6 +334,7 @@ class OpenCodeClient:
         full_text = "".join(self._response_chunks)
         stop = result.get("stopReason", "end_turn")
         logger.info(f"[{self.name}] Prompt done: {len(full_text)} chars, stop={stop}, chunks={len(self._response_chunks)}")
+        logger.info(f"[{self.name}] Response: {full_text}")
         logger.info(f"[{self.name}] RPC result keys: {list(result.keys())}")
         if not full_text:
             logger.warning(f"[{self.name}] Empty response! result={json.dumps(result, default=str)[:500]}")
