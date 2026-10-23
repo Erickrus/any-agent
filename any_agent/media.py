@@ -40,11 +40,18 @@ UPLOAD_TYPE_IMAGE = 1
 UPLOAD_TYPE_VIDEO = 2
 UPLOAD_TYPE_FILE = 3
 
+# UploadMediaType (types.ts:24-30) — VOICE upload channel
+UPLOAD_TYPE_VOICE = 4
+
 # MessageItemType (types.ts:70-79) — used in item_list[].type
 ITEM_TYPE_TEXT = 1
 ITEM_TYPE_IMAGE = 2
+ITEM_TYPE_VOICE = 3
 ITEM_TYPE_FILE = 4
 ITEM_TYPE_VIDEO = 5
+
+# VoiceItem.encode_type (types.ts:118) — 6 = silk, WeChat's playable voice codec
+VOICE_ENCODE_SILK = 6
 
 
 def guess_mime(path: str) -> str:

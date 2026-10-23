@@ -3,6 +3,16 @@ pyyaml>=6.0
 qrcode-terminal>=0.8; python_version>="3"
 pycryptodome>=3.20
 
+# Optional: voice replies. Receiving/transcription needs none of these.
+# TTS calls Google's translate_tts endpoint directly (via aiohttp, already a
+# dep) — no gTTS package required. Sending a playable voice bubble needs:
+pilk>=0.1              # SILK codec for WeChat voice bubbles
+# NOTE: Google TTS is reachable here only through the local proxy
+# 127.0.0.1:7890 — set voice.proxy in the config accordingly.
+
 # External binary (not a pip package): cloudflared must be installed for
 # hub/device tunnels. macOS: `brew install cloudflared`.
 # https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/
+
+# External binary (not a pip package): ffmpeg for voice replies.
+# macOS: `brew install ffmpeg`. Linux: apt/dnf/yum install ffmpeg.

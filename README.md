@@ -8,28 +8,16 @@ tunnels and register their agents with the hub. From your phone you pick any age
 machine with `/use <device>/<agent>`, and the hub relays prompts and replies — including
 images and files.
 
-
-```mermaid
-flowchart TB
-    iPhone["WeChat"]
-
-    subgraph Hub["hub machine"]
-        direction LR
-        HubAgent["any-agent (hub)"]
-        Local["local opencode / claude"]
-        HubAgent --> Local
-    end
-
-    iPhone --> HubAgent
-
-    subgraph Device["device box1"]
-        direction LR
-        DeviceAgent["any-agent (device)"]
-        DeviceLocal["opencode / claude"]
-        DeviceAgent --> DeviceLocal
-    end
-
-    HubAgent <-->|"cloudflared tunnels<br/>(JSON over HTTPS)<br/>register / heartbeat<br/>prompt / result / media / logs"| DeviceAgent
+```
+                         ┌───────────────── hub machine ──────────────────┐
+ iPhone WeChat  ──────▶  │  any-agent (hub)  ──▶  local opencode / claude │
+                         │        ▲   │                                   │
+                         └────────│───┼───────────────────────────────────┘
+                                  │   │  cloudflared tunnels (JSON over HTTPS)
+                     register /   │   ▼  prompt / result / media / logs
+                     heartbeat  ┌─┴───────────── device "box1" ────────────┐
+                                │  any-agent (device) ──▶ opencode/claude  │
+                                └──────────────────────────────────────────┘
 ```
 
 ## Requirements
@@ -71,20 +59,6 @@ python3 -m any_agent
 
 # 3. Log in to WeChat (QR code prints in the terminal; scan it once).
 python3 -m any_agent --login
-
-```
-you will first see this:
-
-<img src=imgs/qrcode.png />
-
-Then use wechat plugin to scan this qrcode:
-
-<img src=imgs/wechat.png />
-
-
-
-```bash
-
 
 # 4. Later runs reuse the saved login — no QR, no --login needed.
 python3 -m any_agent

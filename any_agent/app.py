@@ -129,15 +129,21 @@ async def do_qr_login() -> dict:
             logger.error(f"Failed to get QR code: {qr_data}")
             sys.exit(1)
 
+        print(f"\nScan this QR code with WeChat:")
         if qrcode_img:
             try:
-                import qrcode_terminal
-                qrcode_terminal.draw(qrcode)
-            except ImportError:
-                pass
-
-        print(f"\nScan this QR code with WeChat:")
-        print(f"QR URL: {qrcode}\n")
+                import qrcode as _qr
+                qr = _qr.QRCode(border=1)
+                qr.add_data(qrcode_img)
+                qr.make(fit=True)
+                qr.print_ascii(invert=True)
+                print(f"\nOr open this URL: {qrcode_img}")
+            except Exception as e:
+                logger.warning(f"QR render failed: {e}")
+                print(f"QR URL: {qrcode_img}")
+        else:
+            print(f"QR URL: {qrcode}")
+        print()
 
         def on_status(s):
             logger.info(f"QR status: {s}")
@@ -200,7 +206,18 @@ async def message_loop(client: ILinkClient, devices: DeviceManager):
 
             text = msg.text_body()
             from_user = msg.from_user_id
+            inbound_was_voice = msg.is_voice()
             if not text or not from_user:
+                if inbound_was_voice and from_user:
+                    # Voice arrived but Tencent gave us no transcript to act on.
+                    try:
+                        await client.send_message(
+                            from_user,
+                            "[couldn't transcribe that voice message — please type it]",
+                            context_token=context_tokens.get(from_user, ""),
+                        )
+                    except Exception:
+                        pass
                 continue
 
             if msg.context_token:

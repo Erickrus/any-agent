@@ -212,9 +212,22 @@ class WeixinMessage:
 
     def text_body(self) -> str:
         for item in self.item_list:
-            if item.get("type") == 1 and item.get("text_item"):
+            if item.get("type") == media_types.ITEM_TYPE_TEXT and item.get("text_item"):
                 return item["text_item"].get("text", "")
+            # Voice: Tencent transcribes server-side; the transcript arrives in
+            # voice_item.text. Surface it so a voice message is handled like text.
+            if item.get("type") == media_types.ITEM_TYPE_VOICE and item.get("voice_item"):
+                voice_text = item["voice_item"].get("text", "")
+                if voice_text:
+                    return voice_text
         return ""
+
+    def is_voice(self) -> bool:
+        """True if this message contains a voice item (transcribed or not)."""
+        return any(
+            item.get("type") == media_types.ITEM_TYPE_VOICE and item.get("voice_item")
+            for item in self.item_list
+        )
 
 
 class ILinkClient:
@@ -518,6 +531,39 @@ class ILinkClient:
             await self._send_item(to, {"type": 1, "text_item": {"text": caption}}, context_token)
         result = await self._send_item(to, item, context_token)
         logger.info(f"send_media: sent {path} ({mime}) to {to}")
+        return result
+
+    async def send_voice(
+        self,
+        to: str,
+        silk_path: str,
+        duration_ms: int = 0,
+        context_token: str = "",
+    ) -> dict:
+        """
+        Upload a SILK-encoded audio file and send it as a playable voice bubble
+        (item type 3, voice_item). The file MUST be Tencent-flavoured SILK; use
+        voice.synthesize(..., prefer='silk') to produce one.
+        """
+        uploaded = await self.upload_file(
+            silk_path, to_user_id=to, media_type=media_types.UPLOAD_TYPE_VOICE
+        )
+        ref = self._build_media_ref(uploaded)
+        item = {
+            "type": media_types.ITEM_TYPE_VOICE,
+            "voice_item": {
+                "media": ref,
+                "encode_type": media_types.VOICE_ENCODE_SILK,
+                "bits_per_sample": 16,
+                "sample_rate": 24000,
+                "playtime": int(duration_ms),
+            },
+        }
+        result = await self._send_item(to, item, context_token)
+        logger.info(
+            f"send_voice: sent {silk_path} ({duration_ms}ms) to {to} "
+            f"resp={json.dumps(result, ensure_ascii=False)[:400]}"
+        )
         return result
 
     async def send_typing(self, user_id: str, typing_ticket: str = "", status: int = 1) -> dict:

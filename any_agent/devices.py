@@ -10,7 +10,7 @@ import os
 from dataclasses import dataclass, field
 from typing import Any
 
-from .acp import ACPClient, ACPResponse, ClaudeClient, OpenCodeClient, ClaudeCodeClient
+from .acp import ACPClient, ACPResponse, ClaudeClient, OpenCodeClient, ClaudeCodeClient, PiClient
 
 logger = logging.getLogger("any_agent.devices")
 
@@ -73,7 +73,7 @@ class DeviceManager:
         self.configs = {d.name: d for d in device_configs}
         self._default_agent = default_agent if default_agent in self.configs else None
         # key: "device:cwd"
-        self._clients: dict[str, OpenCodeClient | ClaudeCodeClient] = {}
+        self._clients: dict[str, OpenCodeClient | ClaudeCodeClient | PiClient] = {}
         self._user_bindings: dict[str, UserBinding] = {}
         self._lock = asyncio.Lock()
         # Hub-only: registry of remote devices + client to reach them.
@@ -140,7 +140,7 @@ class DeviceManager:
         self._user_bindings[user_id] = UserBinding(device=new_device, cwd=expanded)
         return None
 
-    async def get_client(self, device_name: str, cwd: str) -> OpenCodeClient | ClaudeCodeClient:
+    async def get_client(self, device_name: str, cwd: str) -> OpenCodeClient | ClaudeCodeClient | PiClient:
         key = self._client_key(device_name, cwd)
         async with self._lock:
             if key in self._clients and self._clients[key].is_running:
@@ -159,6 +159,15 @@ class DeviceManager:
                     model=cfg.model or None,
                     allowed_tools=cfg.args if cfg.args else None,
                     skip_permissions=cfg.env.get("CLAUDE_ACP_SKIP_PERMISSIONS") == "true",
+                )
+            elif cfg.type == "pi":
+                client = PiClient(
+                    bin_path=cfg.bin,
+                    cwd=cwd,
+                    name=cfg.name,
+                    env_extra=cfg.env,
+                    model=cfg.model or None,
+                    args=cfg.args if cfg.args else None,
                 )
             else:
                 env_extra = dict(cfg.env)
@@ -278,7 +287,7 @@ class DeviceManager:
                         client = await self.get_client(binding.device, binding.cwd)
                     except Exception as e:
                         logger.warning(f"Failed to start client for {cmd}: {e}")
-                if isinstance(client, (OpenCodeClient, ClaudeCodeClient)):
+                if isinstance(client, (OpenCodeClient, ClaudeCodeClient, PiClient)):
                     result = client.handle_slash_command(text)
                     if result is not None:
                         return result
@@ -383,6 +392,8 @@ class DeviceManager:
                     return client.format_config_option("model")
                 if isinstance(client, ClaudeCodeClient):
                     return f"Model: {client._current_model or cfg.model or '(default)'}"
+                if isinstance(client, PiClient):
+                    return client.format_config_option("model")
                 return f"[{binding.device}] model: {cfg.model or '(default)'}"
             new_model = args[0]
             cfg.model = new_model
@@ -401,6 +412,13 @@ class DeviceManager:
                 except Exception as e:
                     logger.warning(f"set_model failed: {e}")
                     return f"Model set to {new_model} (takes effect on next session)\nNote: {e}"
+            if isinstance(client, PiClient):
+                try:
+                    await client.set_model(new_model)
+                    return f"Model set to {new_model}"
+                except Exception as e:
+                    logger.warning(f"set_model failed: {e}")
+                    return f"Model set to {new_model} (takes effect on next session)\nNote: {e}"
             return f"Model set to {new_model} (takes effect on next session)"
 
         if cmd == "/models":
@@ -408,7 +426,7 @@ class DeviceManager:
             key = self._client_key(binding.device, binding.cwd)
             client = self._clients.get(key)
             logger.info(f"/models: key={key} client={type(client).__name__ if client else None} clients={list(self._clients.keys())}")
-            if isinstance(client, (OpenCodeClient, ClaudeCodeClient)):
+            if isinstance(client, (OpenCodeClient, ClaudeCodeClient, PiClient)):
                 result = client.format_config_option("model", max_items=20)
                 logger.info(f"/models result: {result!r}")
                 return result
