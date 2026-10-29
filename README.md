@@ -14,20 +14,26 @@ flowchart TB
 
     subgraph hub["hub machine"]
         hubagent["any-agent (hub)"]
-        hublocal["local opencode / claude"]
+        hublocal["local opencode / claude / pi"]
         hubagent --> hublocal
     end
 
     subgraph device["device &quot;box1&quot;"]
         devagent["any-agent (device)"]
-        devlocal["opencode / claude"]
+        devlocal["opencode / claude / pi"]
         devagent --> devlocal
     end
 
-    phone --> hubagent
+    phone -- "prompt" --> hubagent
+    hubagent -- "result + send-file images/files" --> phone
     device -. "register / heartbeat" .-> hub
     hub -- "prompt / result / media / logs<br/>(cloudflared tunnels · JSON over HTTPS)" --> device
 ```
+
+Agents on any machine can push files back to your phone via the bundled **send-file**
+skill: the agent emits a `sendfile://` marker, the device relays it to the hub, and the
+hub uploads the image or document to WeChat — so a chart generated on `box1` lands in
+your iPhone chat.
 
 ## Requirements
 
