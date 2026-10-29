@@ -8,16 +8,25 @@ tunnels and register their agents with the hub. From your phone you pick any age
 machine with `/use <device>/<agent>`, and the hub relays prompts and replies — including
 images and files.
 
-```
-                         ┌───────────────── hub machine ──────────────────┐
- iPhone WeChat  ──────▶  │  any-agent (hub)  ──▶  local opencode / claude │
-                         │        ▲   │                                   │
-                         └────────│───┼───────────────────────────────────┘
-                                  │   │  cloudflared tunnels (JSON over HTTPS)
-                     register /   │   ▼  prompt / result / media / logs
-                     heartbeat  ┌─┴───────────── device "box1" ────────────┐
-                                │  any-agent (device) ──▶ opencode/claude  │
-                                └──────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    phone["📱 iPhone WeChat"]
+
+    subgraph hub["hub machine"]
+        hubagent["any-agent (hub)"]
+        hublocal["local opencode / claude"]
+        hubagent --> hublocal
+    end
+
+    subgraph device["device &quot;box1&quot;"]
+        devagent["any-agent (device)"]
+        devlocal["opencode / claude"]
+        devagent --> devlocal
+    end
+
+    phone --> hubagent
+    device -. "register / heartbeat" .-> hub
+    hub -- "prompt / result / media / logs<br/>(cloudflared tunnels · JSON over HTTPS)" --> device
 ```
 
 ## Requirements
